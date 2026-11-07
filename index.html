@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UChicago Sidequests</title>
+<style>
+  :root {
+    --bg: #f6f4f1; --card: #fff; --text: #1d1d1f; --muted: #6b6b70; --line: #e4e0da;
+    --maroon: #800000; --maroon-soft: #f4e6e6; --good: #1b7f4b; --chip: #efebe5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #151416; --card: #1f1e21; --text: #f1eeea; --muted: #a09c97; --line: #34312f;
+            --maroon: #e0828a; --maroon-soft: #3a2326; --good: #5fd195; --chip: #2b292b; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 20px 20px 8px; max-width: 1100px; margin: 0 auto; }
+  h1 { margin: 0; font-size: 24px; letter-spacing: -.01em; }
+  h1 span { color: var(--maroon); }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+           padding: 14px; margin: 12px 0; }
+  .daybar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .daybar h2 { margin: 0 6px; font-size: 18px; flex: 1; min-width: 180px; }
+  button, select, input[type=date], input[type=time], input[type=search] {
+    font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line);
+    border-radius: 9px; padding: 7px 11px; }
+  button { cursor: pointer; }
+  button:hover { border-color: var(--maroon); }
+  button.primary { background: var(--maroon); color: #fff; border-color: var(--maroon); }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px;
+              margin-top: 12px; align-items: end; }
+  .controls label { display: flex; flex-direction: column; font-size: 12px; color: var(--muted); gap: 3px; }
+  .controls input[type=search], .controls select, .controls input[type=time] { width: 100%; }
+  .check { flex-direction: row !important; align-items: center; gap: 7px !important; font-size: 14px !important;
+           color: var(--text) !important; padding-bottom: 7px; }
+  .cats { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .chip { background: var(--chip); border: 1px solid transparent; border-radius: 999px; padding: 4px 11px;
+          font-size: 13px; cursor: pointer; user-select: none; }
+  .chip small { color: var(--muted); margin-left: 3px; }
+  .chip.on { background: var(--maroon); color: #fff; }
+  .chip.on small { color: #ffd9dc; }
+  .count { color: var(--muted); font-size: 13px; margin: 14px 2px 8px; display: flex; justify-content: space-between; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+          display: flex; flex-direction: column; }
+  .img { height: 150px; background: var(--maroon-soft) center/cover no-repeat; position: relative; }
+  .img.none { display: flex; align-items: center; justify-content: center; font-size: 34px; opacity: .6; }
+  .when { position: absolute; left: 10px; bottom: 10px; background: rgba(0,0,0,.72); color: #fff;
+          padding: 3px 9px; border-radius: 7px; font-size: 13px; font-weight: 600; }
+  .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
+  .title { font-weight: 650; font-size: 16px; line-height: 1.25; color: var(--text); text-decoration: none; }
+  .title:hover { color: var(--maroon); text-decoration: underline; }
+  .loc { color: var(--muted); font-size: 13px; }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .badge { font-size: 12px; padding: 2px 8px; border-radius: 6px; background: var(--chip); }
+  .badge.free { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); font-weight: 600; }
+  .badge.age { background: var(--maroon-soft); color: var(--maroon); font-weight: 600; }
+  .travel { display: flex; gap: 6px; flex-wrap: wrap; border-top: 1px dashed var(--line); padding-top: 8px; }
+  .t { font-size: 12.5px; padding: 3px 8px; border-radius: 7px; background: var(--chip); white-space: nowrap; }
+  .t.best { background: var(--maroon); color: #fff; font-weight: 600; }
+  .route { font-size: 12px; color: var(--muted); }
+  .desc { font-size: 13.5px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
+  .desc.open { display: block; }
+  .more { font-size: 12.5px; color: var(--maroon); cursor: pointer; background: none; border: 0; padding: 0; align-self: flex-start; }
+  .tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: auto; }
+  .tag { font-size: 11.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; cursor: pointer; }
+  .tag:hover { border-color: var(--maroon); color: var(--maroon); }
+  .empty { text-align: center; color: var(--muted); padding: 50px 0; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 20px 30px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>UChicago <span>Sidequests</span></h1>
+  <div class="sub" id="sub">Loading events…</div>
+</header>
+<main>
+  <div class="panel">
+    <div class="daybar">
+      <button id="prev" title="Previous day">←</button>
+      <h2 id="dayTitle"></h2>
+      <button id="today">Today</button>
+      <input type="date" id="date">
+      <button id="next" title="Next day">→</button>
+    </div>
+    <div class="controls">
+      <label>Search<input type="search" id="q" placeholder="Title, place, description…"></label>
+      <label>Sort by
+        <select id="sort">
+          <option value="time">Start time</option>
+          <option value="travel">Travel time (fastest)</option>
+          <option value="price">Price (cheapest)</option>
+          <option value="name">Name (A–Z)</option>
+        </select>
+      </label>
+      <label>Source
+        <select id="source"><option value="">All sources</option>
+          <option value="events.uchicago.edu">UChicago</option><option value="do312.com">Do312</option></select>
+      </label>
+      <label>Max travel time
+        <select id="maxTravel"><option value="">Any</option><option value="15">≤ 15 min</option>
+          <option value="30">≤ 30 min</option><option value="45">≤ 45 min</option><option value="60">≤ 60 min</option></select>
+      </label>
+      <label>Age
+        <select id="age"><option value="">Any</option><option value="no21">Hide 21+</option>
+          <option value="no18">Hide 18+ and 21+</option><option value="all">All ages only</option></select>
+      </label>
+      <label>Starts after<input type="time" id="from"></label>
+      <label>Starts before<input type="time" id="to"></label>
+      <label class="check"><input type="checkbox" id="allday" checked> Include all-day events</label>
+      <label class="check"><input type="checkbox" id="free"> Free only</label>
+      <label class="check"><input type="checkbox" id="upcoming"> Hide already started</label>
+    </div>
+    <div class="cats" id="presets">
+      <span class="chip" data-p="">Any time</span>
+      <span class="chip" data-p="06:00-12:00">Morning</span>
+      <span class="chip" data-p="12:00-17:00">Afternoon</span>
+      <span class="chip" data-p="17:00-21:00">Evening</span>
+      <span class="chip" data-p="21:00-04:00">Late night</span>
+    </div>
+    <div class="cats" id="cats"></div>
+  </div>
+  <div class="count"><span id="count"></span><button id="clear">Clear filters</button></div>
+  <div class="grid" id="grid"></div>
+</main>
+<footer>Travel times are estimates from the Main Quad (CTA/Metra schedules; Via = RideSmart, students only, 5pm–4am, inside its service area).</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let ALL = [], DAYS = [], selectedCats = new Set(), catsOpen = false;
+
+const pad = n => String(n).padStart(2, "0");
+const isoToday = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
+const dayOf = e => (e.start || "").slice(0, 10);
+const timeOf = e => (e.all_day || (e.start || "").length < 16) ? "" : e.start.slice(11, 16);
+function fmtTime(t) { if (!t) return "All day"; let [h, m] = t.split(":").map(Number);
+  return `${h % 12 || 12}${m ? ":" + pad(m) : ""} ${h < 12 ? "AM" : "PM"}`; }
+function fmtDay(iso) { const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }); }
+function priceNum(p) { if (!p) return 1e9; if (/\bfree\b/i.test(p) && !/\$\s?\d/.test(p)) return 0;
+  const m = p.match(/\$\s?(\d+(?:\.\d+)?)/); return m ? +m[1] : 1e9; }
+const isFree = e => priceNum(e.price) === 0;
+const ageNum = e => e.age === "All ages" ? 0 : parseInt(e.age) || 0;
+
+function dayEvents() { return ALL.filter(e => dayOf(e) === $("date").value); }
+
+function applyFilters(list) {
+  const q = $("q").value.trim().toLowerCase(), src = $("source").value, mt = +$("maxTravel").value || 0,
+        age = $("age").value, now = new Date(), today = isoToday() === $("date").value;
+  return list.filter(e => {
+    if (q && !(`${e.title} ${e.location} ${e.address} ${e.description} ${e.categories.join(" ")}`.toLowerCase().includes(q))) return false;
+    if (src && e.source !== src) return false;
+    if (mt && !(e.best_min != null && e.best_min <= mt)) return false;
+    if ($("free").checked && !isFree(e)) return false;
+    if (age === "no21" && ageNum(e) >= 21) return false;
+    if (age === "no18" && ageNum(e) >= 18) return false;
+    if (age === "all" && e.age !== "All ages") return false;
+    if ($("upcoming").checked && today && timeOf(e) && timeOf(e) < `${pad(now.getHours())}:${pad(now.getMinutes())}`) return false;
+    const from = $("from").value, to = $("to").value;
+    if (from || to) {
+      const t = timeOf(e);
+      if (!t) { if (!$("allday").checked) return false; }
+      else if (from && to && from > to) { if (!(t >= from || t < to)) return false; }  // wraps past midnight
+      else if ((from && t < from) || (to && t >= to)) return false;
+    }
+    if (selectedCats.size && !e.categories.some(c => selectedCats.has(c))) return false;
+    return true;
+  });
+}
+
+function sortList(list) {
+  const s = $("sort").value, byTime = (a, b) => (timeOf(a) || "00:00").localeCompare(timeOf(b) || "00:00");
+  const cmp = {
+    time: byTime,
+    travel: (a, b) => (a.best_min ?? 1e9) - (b.best_min ?? 1e9) || byTime(a, b),
+    price: (a, b) => priceNum(a.price) - priceNum(b.price) || byTime(a, b),
+    name: (a, b) => a.title.localeCompare(b.title),
+  }[s];
+  return list.slice().sort(cmp);
+}
+
+const MODE_LABEL = { walk: "🚶 Walk", bike: "🚲 Bike", transit: "🚌 Transit", bike_transit: "🚲+🚌 Bike + transit", via: "🚗 Via", via_transit: "🚗+🚌 Via to station + transit" };
+function travelHTML(e) {
+  const items = [["walk", e.walk_min], ["bike", e.bike_min], ["transit", e.transit_min],
+                 ["bike_transit", e.bike_transit_min], ["via", e.via_min], ["via_transit", e.via_transit_min]].filter(([, v]) => v != null);
+  if (!items.length) return "";
+  const chips = items.map(([k, v]) => k === "via_transit" && e.via_leg_min != null
+    ? `<span class="t ${e.best_mode === k ? "best" : ""}">🚗 Via ${e.via_leg_min} min to station → 🚌 ${v} min total</span>`
+    : `<span class="t ${e.best_mode === k ? "best" : ""}">${MODE_LABEL[k]} ${v} min</span>`).join("");
+  let route = "";
+  if (["via", "via_transit"].includes(e.best_mode) && e.via_note) route = e.via_note;
+  else if (["transit", "bike_transit"].includes(e.best_mode) && e.transit_route) route = e.transit_route;
+  else if (e.via_min == null && e.via_transit_min == null && e.via_note && /5pm/.test(e.via_note)) route = "Via not running at that hour (5pm–4am)";
+  return `<div class="travel">${chips}</div>${route ? `<div class="route">${esc(route.replaceAll(" -> ", " → "))}</div>` : ""}`;
+}
+
+function cardHTML(e, i) {
+  const img = e.image ? `style="background-image:url('${esc(e.image)}')"` : "";
+  const long = (e.description || "").length > 180;
+  return `<article class="card">
+    <div class="img ${e.image ? "" : "none"}" ${img}>${e.image ? "" : "📍"}<span class="when">${fmtTime(timeOf(e))}</span></div>
+    <div class="body">
+      <a class="title" href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a>
+      <div class="loc">📍 ${esc(e.location)}${e.address ? " · " + esc(e.address) : ""}</div>
+      <div class="badges">
+        ${e.price ? `<span class="badge ${isFree(e) ? "free" : ""}">${esc(e.price.length > 40 ? e.price.slice(0, 40) + "…" : e.price)}</span>` : ""}
+        ${e.age ? `<span class="badge age">${esc(e.age)}</span>` : ""}
+        <span class="badge">${e.source === "do312.com" ? "Do312" : "UChicago"}</span>
+      </div>
+      ${travelHTML(e)}
+      ${e.description ? `<div class="desc" id="d${i}">${esc(e.description)}</div>${long ? `<button class="more" data-d="d${i}">Show more</button>` : ""}` : ""}
+      <div class="tags">${e.categories.map(c => `<span class="tag" data-cat="${esc(c)}">${esc(c)}</span>`).join("")}</div>
+    </div></article>`;
+}
+
+function render() {
+  const date = $("date").value;
+  $("dayTitle").textContent = fmtDay(date) + (date === isoToday() ? " (today)" : "");
+  const base = dayEvents();
+  // category chips: counts based on everything else filtered except categories
+  const keep = new Set(selectedCats); selectedCats = new Set();
+  const forCats = applyFilters(base); selectedCats = keep;
+  const counts = {}; forCats.forEach(e => e.categories.forEach(c => counts[c] = (counts[c] || 0) + 1));
+  const cats = Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  // show the top 14 (plus any selected) unless expanded
+  const shown = catsOpen ? cats : cats.filter(([c], i) => i < 14 || selectedCats.has(c));
+  $("cats").innerHTML = shown.map(([c, n]) =>
+    `<span class="chip ${selectedCats.has(c) ? "on" : ""}" data-cat="${esc(c)}">${esc(c)}<small>${n}</small></span>`).join("")
+    + (cats.length > 14 ? `<span class="chip" id="catsToggle">${catsOpen ? "Show fewer" : `+ ${cats.length - shown.length} more categories`}</span>` : "");
+  const cur = `${$("from").value}-${$("to").value}`;
+  document.querySelectorAll("#presets .chip").forEach(c => c.classList.toggle("on", (c.dataset.p || "-") === cur));
+  const list = sortList(applyFilters(base));
+  $("count").innerHTML = `<span>${list.length} of ${base.length} events</span>`;
+  $("grid").innerHTML = list.length ? list.map(cardHTML).join("") : `<div class="empty" style="grid-column:1/-1">No events match. Try clearing a filter or another day.</div>`;
+}
+
+function setDate(iso) { $("date").value = iso; selectedCats.clear(); render(); history.replaceState(null, "", "#" + iso); }
+function shiftDay(n) { const [y, m, d] = $("date").value.split("-").map(Number); const t = new Date(y, m - 1, d + n);
+  setDate(`${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`); }
+
+document.addEventListener("click", ev => {
+  if (ev.target.closest("#catsToggle")) { catsOpen = !catsOpen; render(); return; }
+  const cat = ev.target.closest("[data-cat]");
+  if (cat) { const c = cat.dataset.cat; selectedCats.has(c) ? selectedCats.delete(c) : selectedCats.add(c); render(); return; }
+  const more = ev.target.closest(".more");
+  if (more) { const d = $(more.dataset.d); d.classList.toggle("open"); more.textContent = d.classList.contains("open") ? "Show less" : "Show more"; }
+});
+document.querySelectorAll("#presets .chip").forEach(c => c.onclick = () => {
+  const [f, t] = (c.dataset.p || "-").split("-"); $("from").value = f; $("to").value = t; render(); });
+["q", "from", "to", "allday", "sort", "source", "maxTravel", "age", "free", "upcoming"].forEach(id => $(id).addEventListener("input", render));
+$("prev").onclick = () => shiftDay(-1); $("next").onclick = () => shiftDay(1);
+$("today").onclick = () => setDate(isoToday()); $("date").onchange = e => e.target.value && setDate(e.target.value);
+$("clear").onclick = () => { ["q", "from", "to"].forEach(i => $(i).value = ""); ["source", "maxTravel", "age"].forEach(i => $(i).value = "");
+  $("free").checked = $("upcoming").checked = false; $("sort").value = "time"; selectedCats.clear(); render(); };
+
+fetch("events.json", { cache: "no-cache" }).then(r => r.json()).then(data => {
+  ALL = data.filter(e => e.start);
+  DAYS = [...new Set(ALL.map(dayOf))].sort();
+  const dateEl = $("date"); dateEl.min = DAYS[0]; dateEl.max = DAYS[DAYS.length - 1];
+  $("sub").textContent = `${ALL.length} events · ${DAYS[0]} to ${DAYS[DAYS.length - 1]}`;
+  const want = location.hash.slice(1), today = isoToday();
+  setDate(/^\d{4}-\d\d-\d\d$/.test(want) ? want : DAYS.includes(today) ? today : (DAYS.find(d => d >= today) || DAYS[0]));
+}).catch(err => { $("sub").textContent = "Couldn't load events.json — serve this folder with a local web server (see README)."; console.error(err); });
+</script>
+</body>
+</html>

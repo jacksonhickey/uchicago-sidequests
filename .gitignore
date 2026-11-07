@@ -1,0 +1,7 @@
+otp/
+otp.log
+otp.err
+scrape.log
+scrape.err
+__pycache__/
+.claude/

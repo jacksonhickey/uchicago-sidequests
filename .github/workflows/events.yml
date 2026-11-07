@@ -1,0 +1,57 @@
+name: Scrape events + travel times
+
+on:
+  schedule:
+    - cron: "0 11 * * *"   # daily, 11:00 UTC (~5-6 AM Chicago)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - run: pip install requests
+
+      # Cache the OTP jar + schedules + built graph; refreshed monthly so CTA/Metra
+      # schedule changes get picked up.
+      - name: Month stamp
+        id: month
+        run: echo "m=$(date +%Y-%m)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: otp
+          key: otp-${{ steps.month.outputs.m }}
+
+      - name: Download OTP + Chicago data
+        run: python otp_server.py setup
+
+      - name: Start OpenTripPlanner
+        run: |
+          nohup python otp_server.py serve --memory 5G > otp.log 2>&1 &
+          python otp_server.py wait || (tail -50 otp.log; exit 1)
+
+      - name: Scrape events and compute travel times
+        run: python scrape_events.py --travel on
+
+      - name: Commit results
+        run: |
+          git config user.name "events-bot"
+          git config user.email "events-bot@users.noreply.github.com"
+          git add events.json events.csv events.db geocode_cache.json travel_cache.json
+          git diff --staged --quiet || git commit -m "Update events $(date -u +%F)"
+          git push
